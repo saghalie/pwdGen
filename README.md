@@ -1,6 +1,8 @@
 # pwdGen
 Password Generator for Amiga OS 1.3
 
+You can select 4, 6 or 8 length passwords.
+
    ************************************************************************
    *                                                                      *
    *                            DISCLAIMER                                *
