@@ -34,6 +34,7 @@
 #define MNU_Quit  1
 
 VOID updateStrGad(struct Window *win, struct Gadget *gad, UBYTE *newstr);
+VOID SetWindowTitles(struct Window *win, UBYTE *windowTitle, UBYTE *screenTitle);
 int main(int wbac, char **wbav);
 void CloseEveryThing(void);
 void OpenEveryThing(void);
@@ -94,10 +95,11 @@ extern struct GfxBase	    *GfxBase;	       /* Declare Graphics  */
 #define STATBAR_Y 0
 #define MAX_PASSWORD_LENGTH 18
 #define DEFAULT_PASSWORD_LENGTH 8
+#define TITLE_MAX_CHARS 38
 
 #define gfx_rp Wind->RPort
 
-char TBuf[11];
+char TBuf[64];
 
 /* Checks if started from Workbench or CLI */
 typedef struct WBStartup *startworkbench;
@@ -230,6 +232,7 @@ void OpenEveryThing(void)
        }
 
    SetMenuStrip(Wind,&pw_mainMenuList1);	       /* Ready The Menus!	  */
+   Show_FreeMem();
    PrintIText(Wind->RPort,&pw_mainIntuiTextList1,0,0); /* Print The Title Text	 */
 }
 
@@ -435,7 +438,28 @@ ULONG TotalMemB(void)
 
 void Show_FreeMem(void)
 {
-   sprintf(TBuf, "%lu", TotalMemB());
-   Text(gfx_rp, "          "  , 10);
-   Text(gfx_rp, TBuf	      , strlen(TBuf));
+   char memText[20];
+   int i;
+   int spaces;
+   int baseLen;
+   int memLen;
+
+   if(Wind == NULL)
+      return;
+
+   sprintf(memText, "Free:%lu", TotalMemB());
+   strcpy(TBuf, "Password Generator");
+
+   baseLen = strlen(TBuf);
+   memLen = strlen(memText);
+   spaces = TITLE_MAX_CHARS - baseLen - memLen;
+
+   if(spaces < 1)
+      spaces = 1;
+
+   for(i=0;i<spaces;i++)
+      strcat(TBuf, " ");
+
+   strcat(TBuf, memText);
+   SetWindowTitles(Wind, (UBYTE *)TBuf, (UBYTE *)-1);
 }
