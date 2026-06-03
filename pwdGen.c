@@ -97,7 +97,7 @@ extern struct GfxBase	    *GfxBase;	       /* Declare Graphics  */
 
 #define gfx_rp Wind->RPort
 
-char TBuf[10];
+char TBuf[11];
 
 /* Checks if started from Workbench or CLI */
 typedef struct WBStartup *startworkbench;
@@ -435,7 +435,7 @@ ULONG TotalMemB(void)
 
 void Show_FreeMem(void)
 {
-   ltoa(TotalMemB(), TBuf , 0);
+   sprintf(TBuf, "%lu", TotalMemB());
    Text(gfx_rp, "          "  , 10);
    Text(gfx_rp, TBuf	      , strlen(TBuf));
 }
