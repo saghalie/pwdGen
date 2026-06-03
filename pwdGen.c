@@ -15,11 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#ifdef __MINGW32__
+#define _TIMEVAL_DEFINED
+#endif
 #include <time.h>
-#include <sys/dir.h>
-#include <fcntl.h>
-#include <time.h>
-#include <math.h>
 
 #include "pwdGen_rev.h"
 #include "pwdColors.h"
@@ -35,14 +34,16 @@
 #define MNU_Quit  1
 
 VOID updateStrGad(struct Window *win, struct Gadget *gad, UBYTE *newstr);
-CloseEveryThing();
-OpenEveryThing();
-OpenTopaz();
-PickIT(USHORT MN);
-GotIT(USHORT MI);
-static char *genPWD( char NumLen );
-ULONG TotalMemB();
-void Show_FreeMem();
+int main(int wbac, char **wbav);
+void CloseEveryThing(void);
+void OpenEveryThing(void);
+void OpenTopaz(void);
+void PickIT(USHORT MN);
+void GotIT(USHORT MI);
+static char *genPWD(UBYTE NumLen);
+static void generateAndDisplayPassword(UBYTE length);
+ULONG TotalMemB(void);
+void Show_FreeMem(void);
 
 // int genPass( struct Window *win, struct Gadget *gad, int len );
 
@@ -86,8 +87,9 @@ extern struct Library	    *DiskfontBase;     /* Declare Fonts     */
 extern struct IntuitionBase *IntuitionBase;    /* Declare Intuition */
 extern struct GfxBase	    *GfxBase;	       /* Declare Graphics  */
 
-#define FREE_X = 40
-#define STATBAR_Y = 0
+#define FREE_X 40
+#define STATBAR_Y 0
+#define MAX_PASSWORD_LENGTH 8
 
 #define gfx_rp Wind->RPort
 
@@ -102,15 +104,11 @@ int wbmain(startworkbench *StartWorkBench)
    return(main(0, (char **)StartWorkBench));
 }
 
-main(int wbac, char **wbav)
+int main(int wbac, char **wbav)
 {
   ULONG  MsgClass; /* Window and Menu Messages */
   USHORT MsgCode;  /* IDCMP Messages */
   APTR	 MsgGad;   /* Gadget Messages */
-
-  /* Clear string workaround */
-  char clear[];
-  char *bclr = "        ";
 
   /* checking if started from workbench or cli */
   if(wbac == 0)
@@ -178,46 +176,21 @@ main(int wbac, char **wbav)
 
 		    if(MsgGad == (APTR)&pw_mainGenerate4)
 		    {
-		       char *buf4;
-		       char dest4[];
-
-		       buf4 = genPWD(4);
-
-		       strncpy(clear,bclr,8);
-		       strncpy(dest4,buf4,4);
-
-		       updateStrGad(Wind, &pw_mainPassword, clear);
-		       updateStrGad(Wind, &pw_mainPassword, dest4);
+		       generateAndDisplayPassword(4);
 		    } else
 		    if(MsgGad == (APTR)&pw_mainGenerate6)
 		    {
-		       char *buf6;
-		       char dest6[];
-
-		       buf6 = genPWD(6);
-
-		       strncpy(clear,bclr,8);
-		       strncpy(dest6,buf6,6);
-
-		       updateStrGad(Wind, &pw_mainPassword, clear);
-		       updateStrGad(Wind, &pw_mainPassword, dest6);
+		       generateAndDisplayPassword(6);
 		    } else
 		    if(MsgGad == (APTR)&pw_mainGenerate8)
 		    {
-		       char *buf8;
-		       char dest8[];
-
-		       buf8 = genPWD(8);
-
-		       strncpy(clear,bclr,8);
-		       strncpy(dest8,buf8,8);
-
-		       updateStrGad(Wind, &pw_mainPassword, clear);
-		       updateStrGad(Wind, &pw_mainPassword, dest8);
+		       generateAndDisplayPassword(8);
 		    }
 		    break;
        }
    }
+
+  return 0;
 }
 
 /* Routine to get the password in the string gadget. */
@@ -243,9 +216,10 @@ int genPass( struct Window *win, struct Gadget *gad, int len )
 */
 
 /* Close this and clean up the mess! */
-CloseEveryThing()
+void CloseEveryThing(void)
 {
-    ClearMenuStrip(Wind);
+    if (Wind)
+       ClearMenuStrip(Wind);
 
     if (Wind) {
        CloseWindow(Wind);
@@ -260,7 +234,7 @@ CloseEveryThing()
 }
 
 /* Start the program running */
-OpenEveryThing()
+void OpenEveryThing(void)
 {
   if(!(Scrn = (struct Screen *)
        OpenScreen(&MyScreen)))
@@ -284,7 +258,7 @@ OpenEveryThing()
    PrintIText(Wind->RPort,&pw_mainIntuiTextList1,0,0); /* Print The Title Text	 */
 }
 
-OpenTopaz()
+void OpenTopaz(void)
 {
     if(!(OpenDiskFont(&New)))
     {
@@ -293,7 +267,7 @@ OpenTopaz()
     }
 }
 
-PickIT(USHORT MN)
+void PickIT(USHORT MN)
 {
   switch(MENUNUM(MN))
   {
@@ -302,7 +276,7 @@ PickIT(USHORT MN)
   }
 }
 
-GotIT(USHORT MI)
+void GotIT(USHORT MI)
 {
   switch(MI)
   {
@@ -323,34 +297,48 @@ static char RandomPinCode[] = "0123456789" \
 			      "!@#$%^&*" \
 			      "9876543210";
 
-/* routine to get the random password */
-static char *genPWD( char NumLen )
+static void generateAndDisplayPassword(UBYTE length)
 {
-    char i = 0, j = 0, *p = NULL;
-    char NumberLength = strlen( RandomPinCode );
+    char *password;
 
-    clock_t clk = clock();
-    time_t tm = clock();
+    password = genPWD(length);
+    if(password == NULL)
+	return;
 
-    unsigned int seed = time(&tm)^clk*16;
+    updateStrGad(Wind, &pw_mainPassword, (UBYTE *)password);
+}
 
-    p = (char *)malloc( 512 );
+/* routine to get the random password */
+static char *genPWD(UBYTE NumLen)
+{
+    UBYTE i;
+    UBYTE j;
+    UBYTE NumberLength;
+    static char password[MAX_PASSWORD_LENGTH + 1];
+    static int seeded = 0;
 
-    if(p == NULL)
+    if(NumLen == 0 || NumLen > MAX_PASSWORD_LENGTH)
 	return NULL;
 
-    srand( seed * time(&tm)^clk*15 );
+    if(!seeded) {
+	clock_t clk = clock();
+	unsigned int seed = (unsigned int)time(NULL) ^ (unsigned int)clk;
 
-    memset( (char *)p, NumLen, 0 );
+	srand(seed);
+	seeded = 1;
+    }
+
+    NumberLength = (UBYTE)strlen(RandomPinCode);
+    memset(password, 0, sizeof(password));
 
     /* The number of password characters that you supply (e.g. NumLen) */
     for(i=0;i<NumLen;i++) {
 	  j = rand()%NumberLength;
-       p[i] = RandomPinCode[j];
+       password[i] = RandomPinCode[j];
     }
 
-    return p;
-    free(p);
+    password[NumLen] = '\0';
+    return password;
 }
 
 /*
@@ -362,6 +350,13 @@ static char *genPWD( char NumLen )
 */
 VOID updateStrGad(struct Window *win, struct Gadget *gad, UBYTE *newstr)
 {
+    struct StringInfo *stringInfo;
+
+    if(win == NULL || gad == NULL || newstr == NULL || gad->SpecialInfo == NULL)
+	return;
+
+    stringInfo = (struct StringInfo *)gad->SpecialInfo;
+
     /* first, remove the gadget from the window.  this must be done before
     ** modifying any part of the gadget!!!
     */
@@ -370,9 +365,10 @@ VOID updateStrGad(struct Window *win, struct Gadget *gad, UBYTE *newstr)
     /* For fun, change the value in the buffer, as well as the cursor and
     ** initial display position.
     */
-    strcpy(((struct StringInfo *)(gad->SpecialInfo))->Buffer, newstr);
-    ((struct StringInfo *)(gad->SpecialInfo))->BufferPos = 0;
-    ((struct StringInfo *)(gad->SpecialInfo))->DispPos	 = 0;
+    strncpy(stringInfo->Buffer, (char *)newstr, stringInfo->MaxChars - 1);
+    stringInfo->Buffer[stringInfo->MaxChars - 1] = '\0';
+    stringInfo->BufferPos = 0;
+    stringInfo->DispPos = 0;
 
     /* Add the gadget back, placing it at the end of the list (~0)
     ** and refresh its imagery.
@@ -384,14 +380,14 @@ VOID updateStrGad(struct Window *win, struct Gadget *gad, UBYTE *newstr)
     ActivateGadget(gad,win,NULL);
 }
 
-ULONG TotalMemB()
+ULONG TotalMemB(void)
 {
    ULONG tmem;
    tmem = AvailMem((ULONG)MEMF_PUBLIC);
-   return;
+   return tmem;
 }
 
-void Show_FreeMem()
+void Show_FreeMem(void)
 {
    ltoa(TotalMemB(), TBuf , 0);
    Text(gfx_rp, "          "  , 10);

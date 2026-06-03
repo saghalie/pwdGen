@@ -148,7 +148,7 @@ static struct Requester QuitRequester = {
 
 extern struct Window *Wind;
 
-reqQuit()
+void reqQuit(void)
 {
    Request(&QuitRequester, Wind );
 }

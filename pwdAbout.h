@@ -111,7 +111,7 @@ static struct Requester AboutRequester = {
 
 extern struct Window *Wind;
 
-reqAbout()
+void reqAbout(void)
 {
    Request(&AboutRequester, Wind );
 }

@@ -1,5 +1,5 @@
 #ifndef PWDMAIN_H
-#define PWMAIN_H
+#define PWDMAIN_H
 
 /*
  *  pwdMain.h
@@ -12,11 +12,11 @@
 #include "pwdColors.h"
 #include "pwdGen_rev.h"
 
-/* Pallete */
-USHORT MAP[16] = {
+/* Palette */
+#define mapCount 16
+USHORT MAP[mapCount] = {
   0xbbb, 0x000, 0xfff, 0xf60, 0x090, 0x4f1, 0x00f, 0x2cd,
   0xc00, 0xa0f, 0x950, 0xfca, 0xfe0, 0xf0c, 0x888, 0x444
-#define mapCount 16
 };
 
 struct TextAttr New = {

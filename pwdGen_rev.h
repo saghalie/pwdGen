@@ -14,7 +14,7 @@
 #define DATE     "07DEC16"
 #define VERS     "pwdGen v0.02a"
 #define VSTRING  "pwdGen v0.02a (07DEC16)"
-#define VERSTAG  "\0$VER: pinGen 0.02a (07DEC16)"
+#define VERSTAG  "\0$VER: pwdGen 0.02a (07DEC16)"
 #define PRGNAME  "Password Generator"
 #define VERSREV  "0.02a"
 
