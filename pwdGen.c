@@ -40,8 +40,11 @@ void OpenEveryThing(void);
 void OpenTopaz(void);
 void PickIT(USHORT MN);
 void GotIT(USHORT MI);
-static char *genPWD(UBYTE NumLen);
-static void generateAndDisplayPassword(UBYTE length);
+static char *genPWD(UBYTE NumLen, int useLower, int useUpper, int useNumbers, int useSpecial);
+static void generateAndDisplayPassword(void);
+static UBYTE getPasswordLength(void);
+static int gadgetSelected(struct Gadget *gad);
+static void appendChars(char *dest, UBYTE *destLen, char *source);
 ULONG TotalMemB(void);
 void Show_FreeMem(void);
 
@@ -63,7 +66,7 @@ static struct NewScreen MyScreen = {
 
 static struct NewWindow pw_mainNewWindowStructure1 = {
 	157,31, 				       /* window XY origin relative to TopLeft of screen */
-	323,122,				       /* window width and height */
+	323,166,				       /* window width and height */
 	DKGreen,2,				       /* detail and block pens */
 	MENUPICK+GADGETUP+CLOSEWINDOW+VANILLAKEY,      /* IDCMP flags */
 	WINDOWDRAG+WINDOWCLOSE+ACTIVATE+NOCAREREFRESH, /* other window flags */
@@ -89,7 +92,8 @@ extern struct GfxBase	    *GfxBase;	       /* Declare Graphics  */
 
 #define FREE_X 40
 #define STATBAR_Y 0
-#define MAX_PASSWORD_LENGTH 8
+#define MAX_PASSWORD_LENGTH 18
+#define DEFAULT_PASSWORD_LENGTH 8
 
 #define gfx_rp Wind->RPort
 
@@ -174,17 +178,9 @@ int main(int wbac, char **wbav)
 		    if(MsgGad == (APTR)&AboutGadget1) /* OK */
 		      continue;
 
-		    if(MsgGad == (APTR)&pw_mainGenerate4)
+		    if(MsgGad == (APTR)&pw_mainGenerate)
 		    {
-		       generateAndDisplayPassword(4);
-		    } else
-		    if(MsgGad == (APTR)&pw_mainGenerate6)
-		    {
-		       generateAndDisplayPassword(6);
-		    } else
-		    if(MsgGad == (APTR)&pw_mainGenerate8)
-		    {
-		       generateAndDisplayPassword(8);
+		       generateAndDisplayPassword();
 		    }
 		    break;
        }
@@ -193,27 +189,6 @@ int main(int wbac, char **wbav)
   return 0;
 }
 
-/* Routine to get the password in the string gadget. */
-/* Not working - not sure why though. */
-
-/*
-int genPass( struct Window *win, struct Gadget *gad, int len )
-{
-    char *buf;
-    char dest[];
-
-    char clear[];
-    char *bclr = "        ";
-
-    buf = genPWD(len);
-
-    strncpy(clear,bclr,8);
-    strncpy(dest,buf,len);
-
-    updateStrGad(win,gad,clear);
-    updateStrGad(win,gad,dest);
-}
-*/
 
 /* Close this and clean up the mess! */
 void CloseEveryThing(void)
@@ -290,34 +265,107 @@ void GotIT(USHORT MI)
   }
 }
 
-/* Adding the alphabet, numbers and characters to the buffer. */
-static char RandomPinCode[] = "0123456789" \
-			      "abcdefghijklmnopqrstuvwxyz" \
-			      "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
-			      "!@#$%^&*" \
-			      "9876543210";
+/* Character sets used to build the password pool. */
+static char LowerChars[] = "abcdefghijklmnopqrstuvwxyz";
+static char UpperChars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static char NumberChars[] = "0123456789";
+static char SpecialChars[] = "!@#$%^&*";
 
-static void generateAndDisplayPassword(UBYTE length)
+static int gadgetSelected(struct Gadget *gad)
+{
+    if(gad == NULL)
+	return 0;
+
+    return((gad->Flags & SELECTED) != 0);
+}
+
+static UBYTE getPasswordLength(void)
+{
+    int length;
+    struct StringInfo *lengthInfo;
+    char normalizedLength[4];
+
+    lengthInfo = (struct StringInfo *)pw_mainLength.SpecialInfo;
+    length = atoi((char *)lengthInfo->Buffer);
+
+    if(length < 1)
+	length = DEFAULT_PASSWORD_LENGTH;
+
+    if(length > MAX_PASSWORD_LENGTH)
+	length = MAX_PASSWORD_LENGTH;
+
+    sprintf(normalizedLength, "%d", length);
+    updateStrGad(Wind, &pw_mainLength, (UBYTE *)normalizedLength);
+
+    return((UBYTE)length);
+}
+
+static void appendChars(char *dest, UBYTE *destLen, char *source)
+{
+    UBYTE i;
+    UBYTE sourceLen;
+
+    sourceLen = (UBYTE)strlen(source);
+
+    for(i=0;i<sourceLen;i++) {
+	dest[*destLen] = source[i];
+	(*destLen)++;
+    }
+}
+
+static void generateAndDisplayPassword(void)
 {
     char *password;
+    UBYTE length;
+    int useLower;
+    int useUpper;
+    int useNumbers;
+    int useSpecial;
 
-    password = genPWD(length);
-    if(password == NULL)
+    length = getPasswordLength();
+    useLower = gadgetSelected(&pw_mainUseLower);
+    useUpper = gadgetSelected(&pw_mainUseUpper);
+    useNumbers = gadgetSelected(&pw_mainUseNumbers);
+    useSpecial = gadgetSelected(&pw_mainUseSpecial);
+
+    password = genPWD(length, useLower, useUpper, useNumbers, useSpecial);
+    if(password == NULL) {
+	updateStrGad(Wind, &pw_mainPassword, (UBYTE *)"Select type");
 	return;
+    }
 
     updateStrGad(Wind, &pw_mainPassword, (UBYTE *)password);
 }
 
 /* routine to get the random password */
-static char *genPWD(UBYTE NumLen)
+static char *genPWD(UBYTE NumLen, int useLower, int useUpper, int useNumbers, int useSpecial)
 {
     UBYTE i;
     UBYTE j;
     UBYTE NumberLength;
+    char RandomPinCode[96];
     static char password[MAX_PASSWORD_LENGTH + 1];
     static int seeded = 0;
 
     if(NumLen == 0 || NumLen > MAX_PASSWORD_LENGTH)
+	return NULL;
+
+    NumberLength = 0;
+    memset(RandomPinCode, 0, sizeof(RandomPinCode));
+
+    if(useLower)
+	appendChars(RandomPinCode, &NumberLength, LowerChars);
+
+    if(useUpper)
+	appendChars(RandomPinCode, &NumberLength, UpperChars);
+
+    if(useNumbers)
+	appendChars(RandomPinCode, &NumberLength, NumberChars);
+
+    if(useSpecial)
+	appendChars(RandomPinCode, &NumberLength, SpecialChars);
+
+    if(NumberLength == 0)
 	return NULL;
 
     if(!seeded) {
@@ -328,7 +376,6 @@ static char *genPWD(UBYTE NumLen)
 	seeded = 1;
     }
 
-    NumberLength = (UBYTE)strlen(RandomPinCode);
     memset(password, 0, sizeof(password));
 
     /* The number of password characters that you supply (e.g. NumLen) */
@@ -340,7 +387,6 @@ static char *genPWD(UBYTE NumLen)
     password[NumLen] = '\0';
     return password;
 }
-
 /*
 ** Routine to update the value in the string gadget's buffer, then
 ** activate the gadget.
@@ -393,5 +439,3 @@ void Show_FreeMem(void)
    Text(gfx_rp, "          "  , 10);
    Text(gfx_rp, TBuf	      , strlen(TBuf));
 }
-
-

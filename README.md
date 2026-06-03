@@ -1,13 +1,13 @@
 # pwdGen
 
-pwdGen is a small password generator for Amiga OS 1.3. It opens a custom Intuition screen and lets the user generate passwords with 4, 6, or 8 characters.
+pwdGen is a small password generator for Amiga OS 1.3. It opens a custom Intuition screen and lets the user choose a password length and character sets before generating a password.
 
 The project is written in C and uses AmigaOS 1.3 era headers, gadgets, menus, requesters, and screen/window structures.
 
 ## Features
 
-- Generates 4, 6, or 8 character passwords.
-- Uses digits, lowercase letters, uppercase letters, and symbols.
+- Lets the user choose password length from 1 to 18 characters.
+- Lets the user include or exclude lowercase letters, uppercase letters, numbers, and symbols.
 - Provides About and Quit requesters.
 - Designed for Amiga OS 1.3 and the classic Amiga NDK.
 

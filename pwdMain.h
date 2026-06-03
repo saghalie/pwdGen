@@ -4,7 +4,7 @@
 /*
  *  pwdMain.h
  *
- *  © Copyright 2016, WKS Software (KCM Hosting), All Rights Reserved.
+ *  (c) Copyright 2016, WKS Software (KCM Hosting), All Rights Reserved.
  *  http://www.kcmhosting.com
  *
  */
@@ -24,327 +24,411 @@ struct TextAttr New = {
 };
 
 static UBYTE UNDOBUFFER[20];
+static UBYTE pw_LengthUndoBuffer[4];
 
-static SHORT pw_mainBorderVectors1[] = {
-        0,0,
-        94,0,
-        94,12,
-        0,12,
-        0,0
-};
-
-static struct Border pw_mainBorder1 = {
-        -1,-1,  /* XY origin relative to container TopLeft */
-        Black,0,JAM2,   /* front pen, back pen and drawmode */
-        5,      /* number of XY vectors */
-        pw_mainBorderVectors1,  /* pointer to XY vectors */
-        NULL    /* next border in list */
-};
-
-static struct IntuiText pw_mainIText1 = {
-        DKGreen,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        6,2,    /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Generate 8",   /* pointer to text */
-        NULL    /* next IntuiText structure */
-};
-
-static struct Gadget pw_mainGenerate8 = {
-        NULL,   /* next gadget */
-        116,92, /* origin XY of hit box relative to window TopLeft */
-        93,11,  /* hit box width and height */
-        NULL,   /* gadget flags */
-        RELVERIFY,      /* activation flags */
-        BOOLGADGET,     /* gadget type flags */
-        (APTR)&pw_mainBorder1,  /* gadget border or image to be rendered */
-        NULL,   /* alternate imagery for selection */
-        &pw_mainIText1, /* first IntuiText structure */
-        NULL,   /* gadget mutual-exclude long word */
-        NULL,   /* SpecialInfo structure */
-        NULL,  /* user-definable data */
-        NULL    /* pointer to user-definable data */
-};
-
-static SHORT pw_mainBorderVectors2[] = {
-        0,0,
-        94,0,
-        94,12,
-        0,12,
-        0,0
-};
-static struct Border pw_mainBorder2 = {
-        -1,-1,  /* XY origin relative to container TopLeft */
-        Black,0,JAM2,   /* front pen, back pen and drawmode */
-        5,      /* number of XY vectors */
-        pw_mainBorderVectors2,  /* pointer to XY vectors */
-        NULL    /* next border in list */
-};
-
-static struct IntuiText pw_mainIText2 = {
-        DKGreen,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        6,2,    /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Generate 6",   /* pointer to text */
-        NULL    /* next IntuiText structure */
-};
-
-static struct Gadget pw_mainGenerate6 = {
-        &pw_mainGenerate8,      /* next gadget */
-        116,78, /* origin XY of hit box relative to window TopLeft */
-        93,11,  /* hit box width and height */
-        NULL,   /* gadget flags */
-        RELVERIFY,      /* activation flags */
-        BOOLGADGET,     /* gadget type flags */
-        (APTR)&pw_mainBorder2,  /* gadget border or image to be rendered */
-        NULL,   /* alternate imagery for selection */
-        &pw_mainIText2, /* first IntuiText structure */
-        NULL,   /* gadget mutual-exclude long word */
-        NULL,   /* SpecialInfo structure */
-        NULL,  /* user-definable data */
-        NULL    /* pointer to user-definable data */
-};
-
-static SHORT pw_mainBorderVectors3[] = {
+static SHORT pw_mainButtonVectors[] = {
         0,0,
         67,0,
         67,11,
         0,11,
         0,0
 };
-static struct Border pw_mainBorder3 = {
-        -1,-1,  /* XY origin relative to container TopLeft */
-        Black,0,JAM1,   /* front pen, back pen and drawmode */
-        5,      /* number of XY vectors */
-        pw_mainBorderVectors3,  /* pointer to XY vectors */
-        NULL    /* next border in list */
+
+static struct Border pw_mainSmallButtonBorder = {
+        -1,-1,
+        Black,0,JAM1,
+        5,
+        pw_mainButtonVectors,
+        NULL
 };
 
-static struct IntuiText pw_mainIText3 = {
-        DKGreen,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        15,1,   /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Quit", /* pointer to text */
-        NULL    /* next IntuiText structure */
+static SHORT pw_mainWideButtonVectors[] = {
+        0,0,
+        94,0,
+        94,12,
+        0,12,
+        0,0
+};
+
+static struct Border pw_mainWideButtonBorder = {
+        -1,-1,
+        Black,0,JAM2,
+        5,
+        pw_mainWideButtonVectors,
+        NULL
+};
+
+static SHORT pw_mainToggleVectors[] = {
+        0,0,
+        68,0,
+        68,12,
+        0,12,
+        0,0
+};
+
+static struct Border pw_mainToggleBorder = {
+        -1,-1,
+        Black,0,JAM2,
+        5,
+        pw_mainToggleVectors,
+        NULL
+};
+
+static struct IntuiText pw_mainQuitText = {
+        DKGreen,0,JAM2,
+        15,1,
+        NULL,
+        "Quit",
+        NULL
 };
 
 static struct Gadget pw_mainQuit = {
-        &pw_mainGenerate6,      /* next gadget */
-        244,106,        /* origin XY of hit box relative to window TopLeft */
-        66,10,  /* hit box width and height */
-        NULL,   /* gadget flags */
-        RELVERIFY,      /* activation flags */
-        BOOLGADGET,     /* gadget type flags */
-        (APTR)&pw_mainBorder3,  /* gadget border or image to be rendered */
-        NULL,   /* alternate imagery for selection */
-        &pw_mainIText3, /* first IntuiText structure */
-        NULL,   /* gadget mutual-exclude long word */
-        NULL,   /* SpecialInfo structure */
-        NULL,       /* user-definable data */
-        NULL    /* pointer to user-definable data */
+        NULL,
+        244,144,
+        66,10,
+        NULL,
+        RELVERIFY,
+        BOOLGADGET,
+        (APTR)&pw_mainSmallButtonBorder,
+        NULL,
+        &pw_mainQuitText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
 };
 
-static SHORT pw_mainBorderVectors4[] = {
-        0,0,
-        67,0,
-        67,11,
-        0,11,
-        0,0
-};
-static struct Border pw_mainBorder4 = {
-        -1,-1,  /* XY origin relative to container TopLeft */
-        Black,0,JAM1,   /* front pen, back pen and drawmode */
-        5,      /* number of XY vectors */
-        pw_mainBorderVectors4,  /* pointer to XY vectors */
-        NULL    /* next border in list */
-};
-
-static struct IntuiText pw_mainIText4 = {
-        DKGreen,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        15,1,   /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "About",        /* pointer to text */
-        NULL    /* next IntuiText structure */
+static struct IntuiText pw_mainAboutText = {
+        DKGreen,0,JAM2,
+        15,1,
+        NULL,
+        "About",
+        NULL
 };
 
 static struct Gadget pw_mainAbout = {
-        &pw_mainQuit,   /* next gadget */
-        18,106, /* origin XY of hit box relative to window TopLeft */
-        66,10,  /* hit box width and height */
-        NULL,   /* gadget flags */
-        RELVERIFY,      /* activation flags */
-        BOOLGADGET,     /* gadget type flags */
-        (APTR)&pw_mainBorder4,  /* gadget border or image to be rendered */
-        NULL,   /* alternate imagery for selection */
-        &pw_mainIText4, /* first IntuiText structure */
-        NULL,   /* gadget mutual-exclude long word */
-        NULL,   /* SpecialInfo structure */
-        NULL,      /* user-definable data */
-        NULL    /* pointer to user-definable data */
+        &pw_mainQuit,
+        18,144,
+        66,10,
+        NULL,
+        RELVERIFY,
+        BOOLGADGET,
+        (APTR)&pw_mainSmallButtonBorder,
+        NULL,
+        &pw_mainAboutText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
 };
 
-static SHORT pw_mainBorderVectors5[] = {
+static struct IntuiText pw_mainGenerateText = {
+        DKGreen,0,JAM2,
+        18,2,
+        NULL,
+        "Generate",
+        NULL
+};
+
+static struct Gadget pw_mainGenerate = {
+        &pw_mainAbout,
+        116,122,
+        93,11,
+        NULL,
+        RELVERIFY,
+        BOOLGADGET,
+        (APTR)&pw_mainWideButtonBorder,
+        NULL,
+        &pw_mainGenerateText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+static struct IntuiText pw_mainSpecialText = {
+        DKGreen,0,JAM2,
+        8,2,
+        NULL,
+        "Special",
+        NULL
+};
+
+static struct Gadget pw_mainUseSpecial = {
+        &pw_mainGenerate,
+        240,90,
+        67,11,
+        SELECTED,
+        RELVERIFY+TOGGLESELECT,
+        BOOLGADGET,
+        (APTR)&pw_mainToggleBorder,
+        NULL,
+        &pw_mainSpecialText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+static struct IntuiText pw_mainNumbersText = {
+        DKGreen,0,JAM2,
+        6,2,
+        NULL,
+        "Numbers",
+        NULL
+};
+
+static struct Gadget pw_mainUseNumbers = {
+        &pw_mainUseSpecial,
+        166,90,
+        67,11,
+        SELECTED,
+        RELVERIFY+TOGGLESELECT,
+        BOOLGADGET,
+        (APTR)&pw_mainToggleBorder,
+        NULL,
+        &pw_mainNumbersText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+static struct IntuiText pw_mainUpperText = {
+        DKGreen,0,JAM2,
+        8,2,
+        NULL,
+        "Upper",
+        NULL
+};
+
+static struct Gadget pw_mainUseUpper = {
+        &pw_mainUseNumbers,
+        92,90,
+        67,11,
+        SELECTED,
+        RELVERIFY+TOGGLESELECT,
+        BOOLGADGET,
+        (APTR)&pw_mainToggleBorder,
+        NULL,
+        &pw_mainUpperText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+static struct IntuiText pw_mainLowerText = {
+        DKGreen,0,JAM2,
+        8,2,
+        NULL,
+        "Lower",
+        NULL
+};
+
+static struct Gadget pw_mainUseLower = {
+        &pw_mainUseUpper,
+        18,90,
+        67,11,
+        SELECTED,
+        RELVERIFY+TOGGLESELECT,
+        BOOLGADGET,
+        (APTR)&pw_mainToggleBorder,
+        NULL,
+        &pw_mainLowerText,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+static UBYTE pw_LengthBuff[4] = "8";
+
+static struct StringInfo pw_mainLengthSInfo = {
+        pw_LengthBuff,
+        pw_LengthUndoBuffer,
+        0,
+        4,
+        0,
+        0,0,0,0,0,
+        0,
+        0,
+        NULL
+};
+
+static SHORT pw_mainLengthBorderVectors[] = {
         0,0,
-        94,0,
-        94,12,
-        0,12,
+        31,0,
+        31,10,
+        0,10,
         0,0
 };
-static struct Border pw_mainBorder5 = {
-        -1,-1,  /* XY origin relative to container TopLeft */
-        Black,0,JAM2,   /* front pen, back pen and drawmode */
-        5,      /* number of XY vectors */
-        pw_mainBorderVectors5,  /* pointer to XY vectors */
-        NULL    /* next border in list */
+
+static struct Border pw_mainLengthBorder = {
+        -1,-1,
+        Black,0,JAM2,
+        5,
+        pw_mainLengthBorderVectors,
+        NULL
 };
 
-static struct IntuiText pw_mainIText5 = {
-        DKGreen,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        6,2,    /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Generate 4",   /* pointer to text */
-        NULL    /* next IntuiText structure */
-};
-
-static struct Gadget pw_mainGenerate4 = {
-        &pw_mainAbout,  /* next gadget */
-        116,64, /* origin XY of hit box relative to window TopLeft */
-        93,11,  /* hit box width and height */
-        NULL,   /* gadget flags */
-        RELVERIFY,      /* activation flags */
-        BOOLGADGET,     /* gadget type flags */
-        (APTR)&pw_mainBorder5,  /* gadget border or image to be rendered */
-        NULL,   /* alternate imagery for selection */
-        &pw_mainIText5, /* first IntuiText structure */
-        NULL,   /* gadget mutual-exclude long word */
-        NULL,   /* SpecialInfo structure */
-        NULL,  /* user-definable data */
-        NULL    /* pointer to user-definable data */
+static struct Gadget pw_mainLength = {
+        &pw_mainUseLower,
+        98,66,
+        30,9,
+        NULL,
+        RELVERIFY+STRINGCENTER,
+        STRGADGET,
+        (APTR)&pw_mainLengthBorder,
+        NULL,
+        NULL,
+        NULL,
+        (APTR)&pw_mainLengthSInfo,
+        NULL,
+        NULL
 };
 
 static UBYTE pw_SIBuff[20];
 
-static struct StringInfo pw_mainpw_mainPasswordSInfo = {
-        pw_SIBuff,   /* buffer where text will be edited */
-        UNDOBUFFER,  /* optional undo buffer */
-        0,      /* character position in buffer */
-        20,     /* maximum number of characters to allow */
-        0,      /* first displayed character buffer position */
-        0,0,0,0,0,      /* Intuition initialized and maintained variables */
-        0,      /* Rastport of gadget */
-        0,      /* initial value for integer gadgets */
-        NULL    /* alternate keymap (fill in if you set the flag) */
+static struct StringInfo pw_mainPasswordSInfo = {
+        pw_SIBuff,
+        UNDOBUFFER,
+        0,
+        20,
+        0,
+        0,0,0,0,0,
+        0,
+        0,
+        NULL
 };
 
-static SHORT pw_mainBorderVectors6[] = {
+static SHORT pw_mainPasswordBorderVectors[] = {
         0,0,
         183,0,
         183,9,
         0,9,
         0,0
 };
-static struct Border pw_mainBorder6 = {
-        -1,-1,  /* XY origin relative to container TopLeft */
-        Black,0,JAM2,   /* front pen, back pen and drawmode */
-        5,      /* number of XY vectors */
-        pw_mainBorderVectors6,  /* pointer to XY vectors */
-        NULL    /* next border in list */
+
+static struct Border pw_mainPasswordBorder = {
+        -1,-1,
+        Black,0,JAM2,
+        5,
+        pw_mainPasswordBorderVectors,
+        NULL
 };
 
 static struct Gadget pw_mainPassword = {
-        &pw_mainGenerate4,      /* next gadget */
-        73,53,  /* origin XY of hit box relative to window TopLeft */
-        182,8,  /* hit box width and height */
-        NULL,   /* gadget flags */
-        RELVERIFY+STRINGCENTER, /* activation flags */
-        STRGADGET,      /* gadget type flags */
-        (APTR)&pw_mainBorder6,  /* gadget border or image to be rendered */
-        NULL,   /* alternate imagery for selection */
-        NULL,   /* first IntuiText structure */
-        NULL,   /* gadget mutual-exclude long word */
-        (APTR)&pw_mainpw_mainPasswordSInfo,     /* SpecialInfo structure */
-        NULL,   /* user-definable data */
-        NULL    /* pointer to user-definable data */
+        &pw_mainLength,
+        73,48,
+        182,8,
+        NULL,
+        RELVERIFY+STRINGCENTER,
+        STRGADGET,
+        (APTR)&pw_mainPasswordBorder,
+        NULL,
+        NULL,
+        NULL,
+        (APTR)&pw_mainPasswordSInfo,
+        NULL,
+        NULL
 };
 
 #define pw_mainGadgetList1 pw_mainPassword
 
-static struct IntuiText pw_mainIText6 = {
-        DKGreen,White,JAM2,     /* front and back text pens, drawmode and fill byte */
-        0,0,    /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Quit", /* pointer to text */
-        NULL    /* next IntuiText structure */
+static struct IntuiText pw_mainMenuQuitText = {
+        DKGreen,White,JAM2,
+        0,0,
+        NULL,
+        "Quit",
+        NULL
 };
 
 static struct MenuItem pw_mainMenuItem3 = {
-        NULL,   /* next MenuItem structure */
-        0,16,   /* XY of Item hitbox relative to TopLeft of parent hitbox */
-        104,8,  /* hit box width and height */
-        ITEMTEXT+COMMSEQ+ITEMENABLED+HIGHCOMP,  /* Item flags */
-        0,      /* each bit mutually-excludes a same-level Item */
-        (APTR)&pw_mainIText6,   /* Item render  (IntuiText or Image or NULL) */
-        NULL,   /* Select render */
-        'Q',    /* alternate command-key */
-        NULL,   /* SubItem list */
-        MENUNULL        /* filled in by Intuition for drag selections */
+        NULL,
+        0,16,
+        104,8,
+        ITEMTEXT+COMMSEQ+ITEMENABLED+HIGHCOMP,
+        0,
+        (APTR)&pw_mainMenuQuitText,
+        NULL,
+        'Q',
+        NULL,
+        MENUNULL
 };
 
-static struct IntuiText pw_mainIText11 = {
-        DKGreen,White,JAM2,     /* front and back text pens, drawmode and fill byte */
-        0,0,    /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "About",        /* pointer to text */
-        NULL    /* next IntuiText structure */
+static struct IntuiText pw_mainMenuAboutText = {
+        DKGreen,White,JAM2,
+        0,0,
+        NULL,
+        "About",
+        NULL
 };
 
 static struct MenuItem pw_mainMenuItem1 = {
-        &pw_mainMenuItem3,      /* next MenuItem structure */
-        0,0,    /* XY of Item hitbox relative to TopLeft of parent hitbox */
-        104,8,  /* hit box width and height */
-        ITEMTEXT+COMMSEQ+ITEMENABLED+HIGHCOMP,  /* Item flags */
-        0,      /* each bit mutually-excludes a same-level Item */
-        (APTR)&pw_mainIText11,  /* Item render  (IntuiText or Image or NULL) */
-        NULL,   /* Select render */
-        'A',    /* alternate command-key */
-        NULL,   /* SubItem list */
-        MENUNULL        /* filled in by Intuition for drag selections */
+        &pw_mainMenuItem3,
+        0,0,
+        104,8,
+        ITEMTEXT+COMMSEQ+ITEMENABLED+HIGHCOMP,
+        0,
+        (APTR)&pw_mainMenuAboutText,
+        NULL,
+        'A',
+        NULL,
+        MENUNULL
 };
 
 static struct Menu pw_mainMenu1 = {
-        NULL,   /* next Menu structure */
-        0,0,    /* XY origin of Menu hit box relative to screen TopLeft */
-        63,0,   /* Menu hit box width and height */
-        MENUENABLED,    /* Menu flags */
-        "Project",      /* text of Menu name */
-        &pw_mainMenuItem1       /* MenuItem linked list pointer */
+        NULL,
+        0,0,
+        63,0,
+        MENUENABLED,
+        "Project",
+        &pw_mainMenuItem1
 };
 
 #define pw_mainMenuList1 pw_mainMenu1
 
-static struct IntuiText pw_mainIText14 = {
-        Lavender,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        122,42, /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Password:",    /* pointer to text */
-        NULL    /* next IntuiText structure */
+static struct IntuiText pw_mainITextOptions = {
+        Lavender,0,JAM2,
+        132,80,
+        NULL,
+        "Character Sets:",
+        NULL
 };
 
-static struct IntuiText pw_mainIText13 = {
-        DKGreen,0,JAM2, /* front and back text pens, drawmode and fill byte */
-        47,28,  /* XY origin relative to container TopLeft */
-        NULL,   /* font pointer or NULL for default */
-        "Copyright 2016, WKS Software", /* pointer to text */
-        &pw_mainIText14 /* next IntuiText structure */
+static struct IntuiText pw_mainITextLength = {
+        Lavender,0,JAM2,
+        38,68,
+        NULL,
+        "Length:",
+        &pw_mainITextOptions
 };
 
-static struct IntuiText pw_mainIText12 = {
-        DKGreen,0,JAM2,    /* front and back text pens, drawmode and fill byte */
-        59,17,             /* XY origin relative to container TopLeft */
-        NULL,              /* font pointer or NULL for default */
-        PRGNAME" "VERSREV, /* pointer to text */
-        &pw_mainIText13    /* next IntuiText structure */
+static struct IntuiText pw_mainITextPassword = {
+        Lavender,0,JAM2,
+        122,38,
+        NULL,
+        "Password:",
+        &pw_mainITextLength
 };
 
-#define pw_mainIntuiTextList1 pw_mainIText12
+static struct IntuiText pw_mainITextCopyright = {
+        DKGreen,0,JAM2,
+        47,28,
+        NULL,
+        "Copyright 2016, WKS Software",
+        &pw_mainITextPassword
+};
+
+static struct IntuiText pw_mainITextTitle = {
+        DKGreen,0,JAM2,
+        59,17,
+        NULL,
+        PRGNAME" "VERSREV,
+        &pw_mainITextCopyright
+};
+
+#define pw_mainIntuiTextList1 pw_mainITextTitle
 
 #endif
